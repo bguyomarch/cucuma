@@ -1,0 +1,52 @@
+Installation Jenkins
+
+- installer avec la procédure recommandée pour l'OS (jenkins.io)
+  Example with Redhat/Fedora:
+  wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat/jenkins.repo
+  rpm --import https://jenkins-ci.org/redhat/jenkins-ci.org.key
+  yum install jenkins
+  (this installed jenkins.noarch 0:2.73-1.1)
+
+- make sure Java JDK is installed
+  yum install java-1.8.0-openjdk-devel
+- vérifier que maven est installé
+
+- modifier le port d'écoute de Jenkins dans /etc/sysconfig/jenkins
+- démarrer jenkins
+  Ex Fedora: (as root) service jenkins start
+
+- installer les 20 plugins les plus populaires
+- user admin is available: use admin / content of /var/lib/jenkins/secrets/initialAdminPassword
+- modify the following line in /var/lib/jenkins/config.xml: <workspaceDir>${JENKINS_HOME}/workspace/${ITEM_FULLNAME}</workspaceDir>
+- installer le plugin locale pour pouvoir choisir la langue de la UI (ex: EN-us) et redémarrer
+
+- configurer la sécurité (Manage Jenkins -> configure global security). Make sure "enable security" is enabled. And use Jenkins own user database.
+  in Authorization, select "Matrix based security". Give Anonymous Read access (only) and add other users for managing Jenkins
+  
+- since we want to access a private github repo, we need to create an ssh key pair: sudo -u jenkins ssh-keygen -> /var/lib/jenkins/.ssh/id_rsa & /var/lib/jenkins/.ssh/id_rsa.pub
+    the public one must be uploaded to Github
+- make sure git is installed on your Linux OS as well as maven
+
+- configure first job: commons
+  create/add workspace/alternateLocation/beanstream-api-1.0.jar
+
+
+- configure second job (new item): QRUZcontrol
+  create: /var/lib/jenkins/workspace/QRUZcontrol/lib
+  probleme: commons jar not copied to lib
+
+- configure third job: QRUZconnect
+  create: /var/lib/jenkins/workspace/QRUZconnect/lib
+
+- rebuild from a git update
+With the latest Git plugin 1.1.14 (that I just release now), you can now do this more >easily by simply executing the following command:
+curl http://yourserver/jenkins/git/notifyCommit?url=<URL of the Git repository>
+or, when Jenkins is running locally: 
+
+    since we're running Jenkins as standalone Webserver on port 8080 the URL should have been without the /jenkins, like this:
+
+    http://jenkins:8080/git/notifyCommit?url=git@gitserver:tools/common.git
+
+    The url parameter should match exactly what you have in Repository URL of your Jenkins job.
+
+"It appears that your reverse proxy set up is broken."
